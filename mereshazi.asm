@@ -196,6 +196,26 @@ BTN_1_LOOP:
 	jmp BTN_1;
 
 BTN_0:
+	call BUTTON_UPDATE;
+
+	sbrc btnreg0, 0 ; 
+	jmp BTN_0_LOOP;
+	sbrs btnreg0, 1 ; 
+	jmp BTN_0_LOOP;
+	ldi btnreg1, 0; 
+	jmp BTN_0_PAUSE
+
+BTN_0_PAUSE:
+	call BUTTON_UPDATE;
+	
+	sbrc btnreg0, 0 ; 
+	jmp BTN_0_PAUSE;
+	sbrs btnreg0, 1 ;
+	jmp BTN_0_PAUSE;
+	ldi btnreg1, 0; 
+	jmp BTN_0_LOOP;
+
+BTN_0_LOOP:
 	ldi temp, 0b1;
 	sub temp, led;
 	breq LOAD_FOUR;
