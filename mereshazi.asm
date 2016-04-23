@@ -58,8 +58,8 @@
 	jmp DUMMY_IT	; Ext. INT2 Handler
 	jmp DUMMY_IT	; Ext. INT3 Handler
 	jmp DUMMY_IT	; Ext. INT4 Handler (INT gomb)
-	jmp DUMMY_IT	; Ext. INT5 Handler
-	jmp DUMMY_IT	; Ext. INT6 Handler
+	jmp INT_BTN0	; Ext. INT5 Handler
+	jmp INT_BTN1	; Ext. INT6 Handler
 	jmp DUMMY_IT	; Ext. INT7 Handler
 	jmp DUMMY_IT	; Timer2 Compare Match Handler 
 	jmp DUMMY_IT	; Timer2 Overflow Handler 
@@ -130,12 +130,20 @@ ldi temp, 0x00 ;
 out DDRE, temp ; gombok bemenetre állítása
 sts DDRG, temp ; kapcsolók bemenetre állítása
 
+ldi temp, 0 ; beállítjuk az E portot bemenetként (nyomógomb)
+out DDRE, temp
+
+ldi temp, 0b00101000 ; BTN0 és 1 lefutóra
+out EICRB, temp
+
+ldi temp, 0b01100000  ; BTN0 és 1
+out EIMSK, temp
+sei
 
 ;*************************************************************** 
 ;* MAIN program, Endless loop part
 M_LOOP:
 
-	call BUTTON_UPDATE;
 	jmp BTN_1_CHK;
 
 BTN_1_CHK:
@@ -157,7 +165,6 @@ BTN_0_CHK:
 
 
 BTN_1:
-	call BUTTON_UPDATE;
 
 	sbrc btnreg1, 0 ; 
 	jmp BTN_1_LOOP;
@@ -167,7 +174,6 @@ BTN_1:
 	jmp BTN_1_PAUSE
 
 BTN_1_PAUSE:
-	call BUTTON_UPDATE;
 	
 	sbrc btnreg1, 0 ; 
 	jmp BTN_1_PAUSE;
@@ -196,7 +202,6 @@ BTN_1_LOOP:
 	jmp BTN_1;
 
 BTN_0:
-	call BUTTON_UPDATE;
 
 	sbrc btnreg0, 0 ; 
 	jmp BTN_0_LOOP;
@@ -206,7 +211,6 @@ BTN_0:
 	jmp BTN_0_PAUSE
 
 BTN_0_PAUSE:
-	call BUTTON_UPDATE;
 	
 	sbrc btnreg0, 0 ; 
 	jmp BTN_0_PAUSE;
@@ -280,19 +284,41 @@ RESET_LED:
 	out PORTC, led ; kiadjuk itt is, mert a ret a main loopba fog visszatérni
 	ret
 
-BUTTON_UPDATE:
+BUTTON_1_UPDATE:
 	in btn, PINE
-	bst btn, 5 ; T-be töltjük btn 5. bitjét
-	lsl btnreg0 ; balra shifteljük az eddigi értékét a gomb regiszterünknek
-	bld btnreg0, 0 ; betöltjük T értékét a gomb regiszterünk elsõ helyiértékére
-	andi btnreg0, 0b11 ; maszkoljuk, csak az elsõ 2 bit érdekel minket
-
-	bst btn, 6 ; T-be töltjük btn 6. bitjét
-	lsl btnreg1 ;
-	bld btnreg1, 0 ;
-	andi btnreg1, 0b11 ;
+	ldi btnreg1, 10;
 	
 	ret 
+
+INT_BTN1:
+	push temp
+	in temp, SREG
+	push temp
+
+	call BUTTON_1_UPDATE
+
+	pop temp
+	out SREG, temp
+	pop temp
+	reti
+
+BUTTON_0_UPDATE:
+	in btn, PINE
+	ldi btnreg0, 10;
+	
+	ret 
+
+INT_BTN0:
+	push temp
+	in temp, SREG
+	push temp
+
+	call BUTTON_0_UPDATE
+
+	pop temp
+	out SREG, temp
+	pop temp
+	reti
 
 
 
