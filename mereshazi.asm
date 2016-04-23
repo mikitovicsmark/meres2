@@ -139,23 +139,44 @@ M_LOOP:
 	jmp BTN_1_CHK;
 
 BTN_1_CHK:
-	sbrc btnreg1, 0 ; ha a gomb regiszter elsõ bitjének értéke 0, akkor kihagyjuk a jmp loopot
+	sbrc btnreg1, 0 ; 
 	jmp BTN_0_CHK;
-	sbrs btnreg1, 1 ; ha a gomb regiszter második bitjének értéke 1, akkor kihagyjuk a jmp loopot
+	sbrs btnreg1, 1 ;
 	jmp BTN_0_CHK;
+	ldi btnreg1, 0; 
 	jmp BTN_1;
-	ldi btnreg1, 0; ne érzékelje úgy, hogy le van nyomva
+	
 
 BTN_0_CHK:
 	sbrc btnreg0, 0 ;
 	jmp M_LOOP;
 	sbrs btnreg0, 1 ;
 	jmp M_LOOP;
+	ldi btnreg1, 0; 
 	jmp BTN_0;
-	ldi btnreg0, 0; ne érzékelje úgy, hogy le van nyomva
 
 
 BTN_1:
+	call BUTTON_UPDATE;
+
+	sbrc btnreg1, 0 ; 
+	jmp BTN_1_LOOP;
+	sbrs btnreg1, 1 ; 
+	jmp BTN_1_LOOP;
+	ldi btnreg1, 0; 
+	jmp BTN_1_PAUSE
+
+BTN_1_PAUSE:
+	call BUTTON_UPDATE;
+	
+	sbrc btnreg1, 0 ; 
+	jmp BTN_1_PAUSE;
+	sbrs btnreg1, 1 ;
+	jmp BTN_1_PAUSE;
+	ldi btnreg1, 0; 
+	jmp BTN_1_LOOP;
+
+BTN_1_LOOP:
 	ldi temp, 0b1000;
 	sub temp, led;
 	breq LOAD_SEVEN;
